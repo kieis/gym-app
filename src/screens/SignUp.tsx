@@ -7,11 +7,11 @@ import { Button } from "@components/Button";
 import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 
-export function SignIn() {
+export function SignUp() {
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
 
-  function handleCreateAccount() {
-    navigation.navigate("signUp");
+  function handleGoBack() {
+    navigation.goBack();
   }
 
   return (
@@ -38,9 +38,10 @@ export function SignIn() {
 
         <Center>
           <Heading color="gray.100" fontSize="xl" mb={6} fontFamily="heading">
-            Access your account
+            Create your account
           </Heading>
 
+          <Input placeholder="Name" />
           <Input
             placeholder="Email"
             keyboardType="email-address"
@@ -48,19 +49,11 @@ export function SignIn() {
           />
           <Input placeholder="Password" secureTextEntry />
 
-          <Button title="Connect" />
+          <Button title="Create and connect" />
         </Center>
 
         <Center mt={24}>
-          <Text color="gray.100" fontSize="sm" mb={3} fontFamily="body">
-            Don't have access yet?
-          </Text>
-
-          <Button
-            title="Create Account"
-            variant="outline"
-            onPress={handleCreateAccount}
-          />
+          <Button title="Back to login" variant="outline" onPress={handleGoBack} />
         </Center>
       </VStack>
     </ScrollView>
