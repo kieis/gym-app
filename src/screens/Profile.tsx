@@ -9,14 +9,56 @@ import {
   Skeleton,
   Text,
   VStack,
+  useToast,
 } from "native-base";
 import { useState } from "react";
-import { TouchableOpacity } from "react-native";
+import { Alert, TouchableOpacity } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 
 const PHOTO_SIZE = 33;
 
 export function Profile() {
-  const [isPhotoLoading, setIsPhotoLoading] = useState(true);
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
+  const [userPhotoUri, setUserPhotoUri] = useState(
+    "https://github.com/kieis.png"
+  );
+
+  const toast = useToast();
+
+  async function handleSelectUserPhoto() {
+    setIsPhotoLoading(true);
+
+    try {
+      const selectedPhoto = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        aspect: [4, 4],
+        allowsEditing: true,
+      });
+
+      if (selectedPhoto.canceled) {
+        return;
+      }
+
+      const photoUri = selectedPhoto.assets[0].uri;
+      const photoInfo = await FileSystem.getInfoAsync(photoUri);
+
+      if (photoInfo.exists && photoInfo.size / 1024 / 1024 > 5) {
+        return toast.show({
+          title: "This image is so big, choose another max 5MB.",
+          placement: "top",
+          bgColor: "red.500",
+        });
+      }
+
+      setUserPhotoUri(photoUri);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsPhotoLoading(false);
+    }
+  }
 
   return (
     <VStack flex={1}>
@@ -34,13 +76,13 @@ export function Profile() {
             />
           ) : (
             <UserPhoto
-              source={{ uri: "https://github.com/kieis.png" }}
+              source={{ uri: userPhotoUri }}
               alt="User photo"
               size={PHOTO_SIZE}
             />
           )}
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleSelectUserPhoto}>
             <Text
               color="green.500"
               fontWeight="bold"
@@ -51,10 +93,12 @@ export function Profile() {
               Change photo
             </Text>
           </TouchableOpacity>
+        </Center>
 
+        <VStack px={10}>
           <Input placeholder="Name" bg="gray.600" />
           <Input placeholder="Email" bg="gray.600" isDisabled />
-        </Center>
+        </VStack>
 
         <VStack px={10} mt={12} mb={9}>
           <Heading color="gray.200" fontSize="md" mb={2}>
@@ -69,7 +113,7 @@ export function Profile() {
             secureTextEntry
           />
 
-          <Button title="Update" mt={4}/>
+          <Button title="Update" mt={4} />
         </VStack>
       </ScrollView>
     </VStack>
