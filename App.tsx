@@ -1,4 +1,5 @@
 import { Loading } from "@components/Loading";
+import { AuthContext, AuthContextProvider } from "@contexts/AuthContext";
 import {
   Roboto_400Regular,
   Roboto_700Bold,
@@ -18,7 +19,9 @@ export default function App() {
   return (
     <NativeBaseProvider theme={THEME}>
       <StatusBar style="light" translucent />
-      {fontsLoaded ? <Routes /> : <Loading />}
+      <AuthContextProvider>
+        {fontsLoaded ? <Routes /> : <Loading />}
+      </AuthContextProvider>
     </NativeBaseProvider>
   );
 }
