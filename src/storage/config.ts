@@ -1,4 +1,5 @@
 const APP_NAME = "@gymapp";
 const USER_COLLECTION = `${APP_NAME}:user`;
+const AUTH_TOKEN_COLLECTION = `${APP_NAME}:authToken`;
 
-export { APP_NAME, USER_COLLECTION };
+export { APP_NAME, USER_COLLECTION, AUTH_TOKEN_COLLECTION };
