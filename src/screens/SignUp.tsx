@@ -20,6 +20,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
+import { useState } from "react";
+import { useAuth } from "@hooks/useAuth";
 
 type FormDataProps = {
   name: string;
@@ -44,6 +46,8 @@ const signUpSchema = yup.object({
 export function SignUp() {
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
   const toast = useToast();
+  const { signIn } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -69,26 +73,28 @@ export function SignUp() {
     confirmPassword,
   }: FormDataProps) {
     try {
-      const response = await api.post("/users", {
-        name,
-        email,
-        password,
-      });
+      setIsLoading(true);
+
+      await api.post("/users", { name, email, password });
+      setTimeout(async () => {
+        await signIn({ email, password });
+      }, 1000);
 
       toast.show({
         title: "Your solicitation have been successfully delivered",
         bg: "green.500",
-        placement: "top"
+        placement: "top",
       });
     } catch (error) {
       const isAppError = error instanceof AppError;
+      setIsLoading(false);
 
       toast.show({
         title: isAppError
           ? error.message
           : "Cannot create account, please try again later.",
         bg: "red.500",
-        placement: "top"
+        placement: "top",
       });
     }
   }
@@ -191,6 +197,7 @@ export function SignUp() {
           <Button
             title="Create and connect"
             onPress={handleSubmit(handleSignUp)}
+            isLoading={isLoading}
           />
         </Center>
 
