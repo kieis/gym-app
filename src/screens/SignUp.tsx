@@ -19,7 +19,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import * as yup from "yup";
 import { api } from "@services/api";
-import axios from "axios";
 import { AppError } from "@utils/AppError";
 
 type FormDataProps = {
@@ -77,8 +76,7 @@ export function SignUp() {
       });
 
       toast.show({
-        title: "Success",
-        description: "Your solicitation have been successfully delivered",
+        title: "Your solicitation have been successfully delivered",
         bg: "green.500",
         placement: "top"
       });
@@ -86,8 +84,7 @@ export function SignUp() {
       const isAppError = error instanceof AppError;
 
       toast.show({
-        title: "Error",
-        description: isAppError
+        title: isAppError
           ? error.message
           : "Cannot create account, please try again later.",
         bg: "red.500",
