@@ -1,4 +1,12 @@
-import { VStack, Image, Text, Center, Heading, ScrollView } from "native-base";
+import {
+  VStack,
+  Image,
+  Text,
+  Center,
+  Heading,
+  ScrollView,
+  useToast,
+} from "native-base";
 
 import LogoSvg from "@assets/logo.svg";
 import BackgroundImg from "@assets/background.png";
@@ -10,6 +18,9 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import * as yup from "yup";
+import { api } from "@services/api";
+import axios from "axios";
+import { AppError } from "@utils/AppError";
 
 type FormDataProps = {
   name: string;
@@ -20,13 +31,20 @@ type FormDataProps = {
 
 const signUpSchema = yup.object({
   name: yup.string().required("Please enter your name"),
-  email: yup.string().required("Please enter a valid email address").email("Invalid email address"),
+  email: yup
+    .string()
+    .required("Please enter a valid email address")
+    .email("Invalid email address"),
   password: yup.string().required("Please enter a valid password"),
-  confirmPassword: yup.string().required("Please confirm your password").oneOf([yup.ref("password")], "Password needs to be equal"),
-})
+  confirmPassword: yup
+    .string()
+    .required("Please confirm your password")
+    .oneOf([yup.ref("password")], "Password needs to be equal"),
+});
 
 export function SignUp() {
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
+  const toast = useToast();
   const {
     control,
     handleSubmit,
@@ -38,20 +56,44 @@ export function SignUp() {
       password: "",
       confirmPassword: "",
     },
-    resolver: yupResolver(signUpSchema)
+    resolver: yupResolver(signUpSchema),
   });
 
   function handleGoBack() {
     navigation.goBack();
   }
 
-  function handleSignUp({
+  async function handleSignUp({
     name,
     email,
     password,
     confirmPassword,
   }: FormDataProps) {
-    console.log(name);
+    try {
+      const response = await api.post("/users", {
+        name,
+        email,
+        password,
+      });
+
+      toast.show({
+        title: "Success",
+        description: "Your solicitation have been successfully delivered",
+        bg: "green.500",
+        placement: "top"
+      });
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+
+      toast.show({
+        title: "Error",
+        description: isAppError
+          ? error.message
+          : "Cannot create account, please try again later.",
+        bg: "red.500",
+        placement: "top"
+      });
+    }
   }
 
   return (
