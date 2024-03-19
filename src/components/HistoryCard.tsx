@@ -3,9 +3,10 @@ import { HStack, Heading, Text, VStack } from "native-base";
 interface Props {
   group: string;
   exercise: string;
+  hour: string;
 }
 
-export function HistoryCard({ group, exercise }: Props) {
+export function HistoryCard({ group, hour, exercise }: Props) {
   return (
     <HStack
       w="full"
@@ -27,7 +28,7 @@ export function HistoryCard({ group, exercise }: Props) {
       </VStack>
 
       <Text color="gray.300" fontSize="md">
-        08:56
+        {hour}
       </Text>
     </HStack>
   );

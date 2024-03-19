@@ -1,19 +1,47 @@
 import { HistoryCard } from "@components/HistoryCard";
 import { ScreenHeader } from "@components/ScreenHeader";
-import { Center, Heading, SectionList, Text, VStack } from "native-base";
-import { useState } from "react";
+import { HistoryByDayDTO } from "@dtos/HistoryByDayDTO";
+import { useFocusEffect } from "@react-navigation/native";
+import { api } from "@services/api";
+import { AppError } from "@utils/AppError";
+import {
+  Center,
+  Heading,
+  SectionList,
+  Text,
+  VStack,
+  useToast,
+} from "native-base";
+import { useCallback, useState } from "react";
 
 export function History() {
-  const [exercises, setExercises] = useState([
-    {
-      title: "26.08.22",
-      data: ["Data1", "Data2"],
-    },
-    {
-      title: "12.06.23",
-      data: ["Data1", "Data2"],
-    },
-  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+
+  const [exercises, setExercises] = useState<HistoryByDayDTO []>([]);
+
+  async function fetchHistory() {
+    try {
+      setIsLoading(true);
+      const response = await api.get("history");
+      setExercises(response.data);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      toast.show({
+        title: isAppError ? error.message : "Can't load history.",
+        placement: "top",
+        bg: "red.500",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchHistory();
+    }, [])
+  );
 
   return (
     <VStack flex={1}>
@@ -21,10 +49,16 @@ export function History() {
 
       <SectionList
         sections={exercises}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => <HistoryCard group="Chest" exercise={item} />}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <HistoryCard group={item.group} exercise={item.name} hour={item.hour} />}
         renderSectionHeader={({ section }) => (
-          <Heading color="gray.200" fontSize="md" mt={10} mb={3} fontFamily="heading">
+          <Heading
+            color="gray.200"
+            fontSize="md"
+            mt={10}
+            mb={3}
+            fontFamily="heading"
+          >
             {section.title}
           </Heading>
         )}
