@@ -16,7 +16,7 @@ type UserAndTokenProps = {
 
 export type AuthContextDataProps = {
   user: UserDTO;
-  updateUserProfile: (updatedUser: UserDTO) => void;
+  updateUserProfile: (updatedUser: UserDTO) => Promise<void>;
   signIn: (data: SignInDataProps) => Promise<void>;
   signOut: () => Promise<void>;
   isLoadingUserStorageData: boolean;
