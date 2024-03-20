@@ -12,6 +12,7 @@ type SignInDataProps = {
 type UserAndTokenProps = {
   user: UserDTO;
   token: string;
+  refresh_token?: string;
 };
 
 export type AuthContextDataProps = {
@@ -40,12 +41,19 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     setUser(user);
   }
 
-  async function storageUserAndToken({ user, token }: UserAndTokenProps) {
+  async function storageUserAndToken({ user, token, refresh_token }: UserAndTokenProps) {
     try {
       setIsLoadingUserStorageData(true);
 
+      if(!refresh_token) {
+        throw "Can't storage invalid refresh token"
+      }
+      
       await userStorage.set(user);
-      await authTokenStorage.set(token);
+      await authTokenStorage.set({
+        token,
+        refresh_token
+      });
     } catch (error) {
       throw error;
     } finally {
@@ -56,8 +64,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   async function signIn({ email, password }: SignInDataProps) {
     try {
       const { data } = await api.post("/sessions", { email, password });
-      if (data?.user && data?.token) {
-        await storageUserAndToken({ user: data.user, token: data.token });
+      if (data?.user && data?.token && data?.refresh_token) {
+        await storageUserAndToken({ 
+          user: data.user, 
+          token: data.token, 
+          refresh_token: data.refresh_token 
+        });
+
         updateUserAndToken({ user: data.user, token: data.token });
       }
     } catch (error) {
@@ -97,7 +110,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       setIsLoadingUserStorageData(true);
 
       const storageUser = await userStorage.get();
-      const token = await authTokenStorage.get();
+      const { token } = await authTokenStorage.get() || {};
       if (storageUser && token) {
         updateUserAndToken({ user: storageUser, token });
       }
@@ -111,6 +124,14 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   useEffect(() => {
     loadUserData();
   }, []);
+
+  useEffect(() => {
+    const subscribe = api.registerInterceptTokenManager(signOut);
+
+    return () => {
+      subscribe();
+    }
+  }, [signOut])
 
   return (
     <AuthContext.Provider
