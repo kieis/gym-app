@@ -1,4 +1,5 @@
 import { HistoryCard } from "@components/HistoryCard";
+import { Loading } from "@components/Loading";
 import { ScreenHeader } from "@components/ScreenHeader";
 import { HistoryByDayDTO } from "@dtos/HistoryByDayDTO";
 import { useFocusEffect } from "@react-navigation/native";
@@ -18,7 +19,7 @@ export function History() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
-  const [exercises, setExercises] = useState<HistoryByDayDTO []>([]);
+  const [exercises, setExercises] = useState<HistoryByDayDTO[]>([]);
 
   async function fetchHistory() {
     try {
@@ -47,32 +48,42 @@ export function History() {
     <VStack flex={1}>
       <ScreenHeader title="Exercises History" />
 
-      <SectionList
-        sections={exercises}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <HistoryCard group={item.group} exercise={item.name} hour={item.hour} />}
-        renderSectionHeader={({ section }) => (
-          <Heading
-            color="gray.200"
-            fontSize="md"
-            mt={10}
-            mb={3}
-            fontFamily="heading"
-          >
-            {section.title}
-          </Heading>
-        )}
-        px={8}
-        contentContainerStyle={
-          exercises.length === 0 && {
-            flex: 1,
-            justifyContent: "center",
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <SectionList
+          sections={exercises}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <HistoryCard
+              group={item.group}
+              exercise={item.name}
+              hour={item.hour}
+            />
+          )}
+          renderSectionHeader={({ section }) => (
+            <Heading
+              color="gray.200"
+              fontSize="md"
+              mt={10}
+              mb={3}
+              fontFamily="heading"
+            >
+              {section.title}
+            </Heading>
+          )}
+          px={8}
+          contentContainerStyle={
+            exercises.length === 0 && {
+              flex: 1,
+              justifyContent: "center",
+            }
           }
-        }
-        ListEmptyComponent={() => (
-          <Text>There are no exercises registered today.</Text>
-        )}
-      />
+          ListEmptyComponent={() => (
+            <Text>There are no exercises registered today.</Text>
+          )}
+        />
+      )}
     </VStack>
   );
 }
